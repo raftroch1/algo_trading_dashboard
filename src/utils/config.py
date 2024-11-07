@@ -2,7 +2,7 @@ import os
 from typing import Dict, Any
 import yaml
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
 
 @dataclass
 class DatabaseConfig:
@@ -125,13 +125,19 @@ class Config:
         
         # Parse dates
         start_date = collection_config.get('start_date')
-        if start_date and start_date != 'now':
+        if isinstance(start_date, str) and start_date != 'now':
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        elif isinstance(start_date, (date, datetime)):
+            start_date = datetime.combine(start_date, datetime.min.time())
+        else:
+            start_date = datetime.now()
             
         end_date = collection_config.get('end_date')
-        if end_date and end_date != 'now':
+        if isinstance(end_date, str) and end_date != 'now':
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
-        elif end_date == 'now':
+        elif isinstance(end_date, (date, datetime)):
+            end_date = datetime.combine(end_date, datetime.min.time())
+        else:
             end_date = datetime.now()
             
         return DataCollectionConfig(
@@ -157,41 +163,3 @@ class Config:
             early_stopping_patience=ml_config.get('early_stopping_patience', 10),
             learning_rate=ml_config.get('learning_rate', 0.001)
         )
-    
-    def save(self) -> None:
-        """Save current configuration to file."""
-        config_data = {
-            'database': {
-                'type': self.db_config.type,
-                'url': self.db_config.url,
-                'port': self.db_config.port,
-                'username': self.db_config.username,
-                'password': self.db_config.password,
-                'database': self.db_config.database,
-                'org': self.db_config.org,
-                'bucket': self.db_config.bucket,
-                'ssl': self.db_config.ssl
-            },
-            'data_collection': {
-                'default_interval': self.collection_config.default_interval,
-                'max_retries': self.collection_config.max_retries,
-                'retry_delay': self.collection_config.retry_delay,
-                'timeout': self.collection_config.timeout,
-                'cache_dir': self.collection_config.cache_dir,
-                'symbols': self.collection_config.symbols,
-                'start_date': self.collection_config.start_date.strftime('%Y-%m-%d') if self.collection_config.start_date else 'now',
-                'end_date': self.collection_config.end_date.strftime('%Y-%m-%d') if self.collection_config.end_date else 'now'
-            },
-            'ml': {
-                'model_dir': self.ml_config.model_dir,
-                'train_test_split': self.ml_config.train_test_split,
-                'validation_split': self.ml_config.validation_split,
-                'batch_size': self.ml_config.batch_size,
-                'epochs': self.ml_config.epochs,
-                'early_stopping_patience': self.ml_config.early_stopping_patience,
-                'learning_rate': self.ml_config.learning_rate
-            }
-        }
-        
-        with open(self.config_path, 'w') as f:
-            yaml.dump(config_data, f, default_flow_style=False)
