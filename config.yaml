@@ -1,0 +1,101 @@
+# Database Configuration
+database:
+  type: influxdb
+  url: http://localhost
+  port: 8086
+  username: admin
+  password: admin
+  database: trading_data
+  org: trading_org
+  bucket: market_data
+  ssl: true
+
+# Data Collection Settings
+data_collection:
+  default_interval: 1d
+  max_retries: 3
+  retry_delay: 5
+  timeout: 30
+  cache_dir: cache
+  symbols:
+    - AAPL
+    - GOOGL
+    - MSFT
+    - AMZN
+    - META
+    - NVDA
+    - TSLA
+  start_date: 2023-01-01
+  end_date: now
+
+# Machine Learning Configuration
+ml:
+  model_dir: models
+  train_test_split: 0.2
+  validation_split: 0.1
+  batch_size: 32
+  epochs: 100
+  early_stopping_patience: 10
+  learning_rate: 0.001
+
+# Feature Engineering Settings
+features:
+  technical_indicators:
+    momentum:
+      - name: RSI
+        periods: [14, 28]
+      - name: MACD
+        fast_period: 12
+        slow_period: 26
+        signal_period: 9
+      - name: ADX
+        period: 14
+    volatility:
+      - name: ATR
+        period: 14
+      - name: BOLLINGER_BANDS
+        period: 20
+        std_dev: 2
+      - name: KELTNER_CHANNELS
+        period: 20
+        atr_period: 10
+    volume:
+      - name: OBV
+      - name: VWAP
+      - name: CVD
+
+  market_regime:
+    lookback_period: 60
+    volatility_window: 20
+    trend_window: 50
+
+  correlation:
+    window_sizes: [20, 60]
+    min_correlation: 0.7
+
+# Risk Management Settings
+risk:
+  position_sizing:
+    max_position_size: 0.1  # 10% of portfolio
+    kelly_fraction: 0.5
+    max_leverage: 1.0
+  
+  risk_limits:
+    max_drawdown: 0.2  # 20%
+    var_confidence: 0.95
+    var_window: 252
+    correlation_threshold: 0.7
+
+# Production Settings
+production:
+  log_level: INFO
+  cache_expiry: 3600  # 1 hour
+  heartbeat_interval: 60  # 1 minute
+  max_retry_attempts: 3
+  retry_delay: 5
+  
+  monitoring:
+    metrics_port: 9090
+    enable_prometheus: true
+    enable_grafana: true
+    alert_threshold: 0.95
