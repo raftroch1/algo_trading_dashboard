@@ -12,13 +12,6 @@ setup(
         "numpy>=1.21.0",
         "influxdb-client>=1.36.0",
         "redis>=4.5.0",
-        "lightgbm>=3.3.0",
-        "catboost>=1.2.0",
-        "scikit-learn>=1.0.0",
-        "torch>=2.0.0",
-        "transformers>=4.30.0",
-        "ta>=0.10.0",
-        "pandas-ta>=0.3.0",
         "fastapi>=0.100.0",
         "uvicorn>=0.22.0",
         "websockets>=11.0.0",
@@ -27,11 +20,26 @@ setup(
         "python-logging-loki>=0.3.1",
         "pytest>=7.4.0",
         "pytest-asyncio>=0.21.0",
-        "black>=23.3.0",
-        "flake8>=6.0.0",
-        "mypy>=1.4.0",
         "pyyaml>=6.0.0"
     ],
+    extras_require={
+        'ml': [
+            "lightgbm>=3.3.0",
+            "catboost>=1.2.0",
+            "scikit-learn>=1.0.0",
+            "torch>=2.0.0",
+            "transformers>=4.30.0",
+        ],
+        'analysis': [
+            "ta>=0.10.0",
+            "pandas-ta>=0.3.0",
+        ],
+        'dev': [
+            "black>=23.3.0",
+            "flake8>=6.0.0",
+            "mypy>=1.4.0",
+        ]
+    },
     python_requires=">=3.8",
     classifiers=[
         "Development Status :: 3 - Alpha",
