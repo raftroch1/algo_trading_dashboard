@@ -1,7 +1,9 @@
 # Variables
 PYTHON_VERSION := 3.8
 POETRY_VERSION := 1.4.2
-DOCKER_COMPOSE := docker-compose
+DOCKER := docker
+FRONTEND_PORT := 3030
+BACKEND_PORT := 8080
 
 # Colors for terminal output
 CYAN := \033[0;36m
@@ -22,6 +24,8 @@ install: ## Install project dependencies
 	@poetry install
 	@echo "$(GREEN)Installing frontend dependencies...$(NC)"
 	@cd frontend && npm install
+	@echo "$(GREEN)Setting up frontend environment...$(NC)"
+	@cp frontend/.env.template frontend/.env
 
 clean: docker-down ## Clean up the project (remove containers, node_modules, etc.)
 	@echo "$(GREEN)Cleaning up project...$(NC)"
@@ -38,19 +42,19 @@ dev: docker-up ## Start development environment
 
 docker-up: ## Start Docker containers
 	@echo "$(GREEN)Starting Docker containers...$(NC)"
-	@docker-compose up -d
+	@$(DOCKER) compose up -d
 
 docker-down: ## Stop Docker containers
 	@echo "$(GREEN)Stopping Docker containers...$(NC)"
-	@docker-compose down
+	@$(DOCKER) compose down
 
 frontend: ## Start frontend development server
-	@echo "$(GREEN)Starting frontend server...$(NC)"
-	@cd frontend && PORT=3000 npm start
+	@echo "$(GREEN)Starting frontend server on port $(FRONTEND_PORT)...$(NC)"
+	@cd frontend && PORT=$(FRONTEND_PORT) npm start
 
 backend: ## Start backend development server
-	@echo "$(GREEN)Starting backend server...$(NC)"
-	@poetry run uvicorn src.infrastructure.api.main:app --reload --port 8080
+	@echo "$(GREEN)Starting backend server on port $(BACKEND_PORT)...$(NC)"
+	@poetry run uvicorn src.infrastructure.api.main:app --reload --port $(BACKEND_PORT)
 
 test: ## Run tests
 	@echo "$(GREEN)Running tests...$(NC)"
@@ -67,23 +71,25 @@ format: ## Format code
 
 docker-build: ## Build Docker images
 	@echo "$(GREEN)Building Docker images...$(NC)"
-	@docker-compose build
+	@$(DOCKER) compose build
 
 docker-logs: ## View Docker container logs
 	@echo "$(GREEN)Viewing Docker logs...$(NC)"
-	@docker-compose logs -f
+	@$(DOCKER) compose logs -f
 
 docker-ps: ## List running containers
 	@echo "$(GREEN)Listing containers...$(NC)"
-	@docker-compose ps
+	@$(DOCKER) compose ps
 
 docker-clean: docker-down ## Clean Docker resources
 	@echo "$(GREEN)Cleaning Docker resources...$(NC)"
-	@docker system prune -f
+	@$(DOCKER) system prune -f
 
 setup: install docker-build ## Initial project setup
 	@echo "$(GREEN)Project setup complete!$(NC)"
 	@echo "$(YELLOW)Run 'make dev' to start development environment$(NC)"
+	@echo "$(YELLOW)Frontend will be available at http://localhost:$(FRONTEND_PORT)$(NC)"
+	@echo "$(YELLOW)Backend API will be available at http://localhost:$(BACKEND_PORT)$(NC)"
 
 all: setup ## Setup and start everything
 	@make dev
